@@ -14,6 +14,14 @@ public class Main {
             else if (input.startsWith("echo ")){
                 System.out.print(input.substring(5));
             }
+            else if(input.startsWith("type ")){
+                if(input.substring(5).matches("type|echo|exit")){
+                    System.out.printf("%s is a shell builtin",input.substring(5));
+                }
+                else{
+                    System.out.printf("%s: command not found",input.substring(5));
+                }
+            }
             else{
             System.out.printf("%s: command not found",input);
             }
