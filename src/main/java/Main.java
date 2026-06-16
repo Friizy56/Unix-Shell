@@ -19,7 +19,7 @@ public class Main {
                     System.out.printf("%s is a shell builtin",input.substring(5));
                 }
                 else{
-                    System.out.printf("%s: command not found",input.substring(5));
+                    System.out.printf("%s: not found",input.substring(5));
                 }
             }
             else{
