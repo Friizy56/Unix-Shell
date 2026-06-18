@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -15,11 +16,29 @@ public class Main {
                 System.out.print(input.substring(5));
             }
             else if(input.startsWith("type ")){
-                if(input.substring(5).matches("type|echo|exit")){
-                    System.out.printf("%s is a shell builtin",input.substring(5));
+                String command = input.substring(5);
+                if(command.matches("type|echo|exit")){
+                    System.out.printf("%s is a shell builtin",command);
                 }
                 else{
-                    System.out.printf("%s: not found",input.substring(5));
+                    String path = System.getenv("Path");
+                    boolean found = false;
+
+                    for(String dir : path.split(":")){
+
+                        File file = new File(dir , command);
+
+                        if(file.exists() && file.canExecute()){
+                            System.out.printf("%s is %s", command, file.getAbsolutePath());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) {
+                        System.out.printf("%s: not found", command);
+                        
+                    }
+                    
                 }
             }
             else{
