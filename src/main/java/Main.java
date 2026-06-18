@@ -15,9 +15,9 @@ public class Main {
             else if (input.startsWith("echo ")){
                 System.out.print(input.substring(5));
             }
-            
-            else if(input.startsWith("type ")){
-                String command = input.substring(5);
+
+            else if(input.startsWith("type ")){ 
+                String command = input.substring(5); //after type is written after type
                 if(command.matches("type|echo|exit")){
                     System.out.printf("%s is a shell builtin",command);
                 }
@@ -37,13 +37,40 @@ public class Main {
                     }
                     if(!found) {
                         System.out.printf("%s: not found", command);
-                        
                     }
                     
                 }
             }
             else{
-            System.out.printf("%s: command not found",input);
+            // System.out.printf("%s: command not found",input);
+
+
+            String[] command = input.split(" ");
+            String path = System.getenv("PATH");
+            boolean found = false;
+
+            for(String dir : path.split(":")){
+
+                File file = new File(dir , command[0]);
+
+                if(file.isFile() && file.canExecute()){
+                    command[0] = file.getAbsolutePath();
+
+                    ProcessBuilder pb = new ProcessBuilder(command);
+                    pb.inheritIO();
+
+                    Process process = pb.start();
+                    process.waitFor();
+
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found) {
+                System.out.printf("%s: not found", command[0]);
+            }
+
             }
             System.out.println();
         }
