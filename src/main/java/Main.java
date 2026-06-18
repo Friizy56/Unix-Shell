@@ -1,4 +1,6 @@
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -54,16 +56,19 @@ public class Main {
                 File file = new File(dir , command[0]);
 
                 if(file.isFile() && file.canExecute()){
-                    command[0] = file.getAbsolutePath();
+                    String executablePath = file.getAbsolutePath();
+                    List<String> cmd = new ArrayList<>();
+                    cmd.add(executablePath);
 
-                    ProcessBuilder pb = new ProcessBuilder(command);
+                    for(int i = 1; i < command.length; i++){
+                        cmd.add(command[i]);
+                    }
+
+                    ProcessBuilder pb = new ProcessBuilder(cmd);
                     pb.inheritIO();
 
                     Process process = pb.start();
                     process.waitFor();
-
-                    found = true;
-                    break;
                 }
             }
 
