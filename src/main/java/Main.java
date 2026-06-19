@@ -20,10 +20,23 @@ public class Main {
                 System.out.println(System.getProperty("user.dir"));
             }
 
-            else if(input.startsWith("type ")){ 
-                String command = input.substring(5); //after type is written after type
+            else if(input.startsWith("cd ")){
+                String directory = input.substring(3);
 
-                if(command.matches("type|echo|exit|pwd")){
+                File dir = new File(directory);
+
+                if(dir.exists() && dir.isDirectory()){
+                    System.setProperty("user.dir", dir.getAbsolutePath());
+                }
+                else{
+                    System.out.println("cd: " + directory + ": No such file or directory");
+                }
+            }
+
+            else if(input.startsWith("type ")){ 
+                String command = input.substring(5); // after type is written
+
+                if(command.matches("type|echo|exit|pwd|cd")){
                     System.out.println(command + " is a shell builtin");
                 }
 
