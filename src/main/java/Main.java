@@ -52,11 +52,9 @@ public class Main {
                 }
 
                 System.out.println();
-            } 
-            else if (input.equals("pwd")) {
+            } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
-            } 
-            else if (input.startsWith("cd ")) {
+            } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
                 File targetDir;
@@ -70,8 +68,7 @@ public class Main {
                     }
 
                     targetDir = new File(home);
-                } 
-                else {
+                } else {
                     File currentDir = new File(System.getProperty("user.dir"));
 
                     if (directory.startsWith("/")) {
@@ -83,18 +80,15 @@ public class Main {
 
                 if (targetDir.exists() && targetDir.isDirectory()) {
                     System.setProperty("user.dir", targetDir.getCanonicalPath());
-                } 
-                else {
+                } else {
                     System.out.println("cd: " + directory + ": No such file or directory");
                 }
-            } 
-            else if (input.startsWith("type ")) {
+            } else if (input.startsWith("type ")) {
                 String command = parseCommand(input).get(1);
 
                 if (command.matches("type|echo|exit|pwd|cd")) {
                     System.out.println(command + " is a shell builtin");
-                } 
-                else {
+                } else {
                     String path = System.getenv("PATH");
                     boolean found = false;
 
@@ -116,13 +110,13 @@ public class Main {
             } 
             else {
 
-                String[] command = input.split(" ");
+                List<String> command = parseCommand(input);
                 String path = System.getenv("PATH");
                 boolean found = false;
 
                 for (String dir : path.split(":")) {
 
-                    File file = new File(dir, command[0]);
+                    File file = new File(dir, command.get(0));
 
                     if (file.isFile() && file.canExecute()) {
                         ProcessBuilder pb = new ProcessBuilder(command);
@@ -137,7 +131,7 @@ public class Main {
                 }
 
                 if (!found) {
-                    System.out.println(command[0] + ": command not found");
+                    System.out.println(command.get(0) + ": command not found");
                 }
             }
         }
