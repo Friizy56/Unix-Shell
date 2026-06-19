@@ -23,15 +23,27 @@ public class Main {
             else if(input.startsWith("cd ")){
                 String directory = input.substring(3);
 
-                File currentDir = new File(System.getProperty("user.dir"));
                 File targetDir;
+                if(directory.equals("~")){
+                    // targetDir = new File(System.getenv("HOME"));
 
-                if(directory.startsWith("/")){
-                    // absolute path
-                    targetDir = new File(directory);
-                } else {
-                    // relative path
-                    targetDir = new File(currentDir, directory);
+                    String home = System.getenv("HOME");
+
+                    if(home == null){
+                        home = System.getProperty("user.home");
+                    }
+
+                    targetDir = new File(home);
+                }
+                else{
+                    File currentDir = new File(System.getProperty("user.dir"));
+
+                    if(directory.startsWith("/")){
+                        targetDir = new File(directory);
+                    }
+                    else{
+                        targetDir = new File(currentDir, directory);
+                    }
                 }
 
                 if(targetDir.exists() && targetDir.isDirectory()){
