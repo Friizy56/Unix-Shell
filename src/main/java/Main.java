@@ -23,10 +23,19 @@ public class Main {
             else if(input.startsWith("cd ")){
                 String directory = input.substring(3);
 
-                File dir = new File(directory);
+                File currentDir = new File(System.getProperty("user.dir"));
+                File targetDir;
 
-                if(dir.exists() && dir.isDirectory()){
-                    System.setProperty("user.dir", dir.getAbsolutePath());
+                if(directory.startsWith("/")){
+                    // absolute path
+                    targetDir = new File(directory);
+                } else {
+                    // relative path
+                    targetDir = new File(currentDir, directory);
+                }
+
+                if(targetDir.exists() && targetDir.isDirectory()){
+                    System.setProperty("user.dir", targetDir.getCanonicalPath());
                 }
                 else{
                     System.out.println("cd: " + directory + ": No such file or directory");
