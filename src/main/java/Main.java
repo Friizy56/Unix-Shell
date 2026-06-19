@@ -11,23 +11,31 @@ public class Main {
         StringBuilder current = new StringBuilder();
 
         boolean inSingleQuotes = false;
+        boolean inDoubleQuotes = false;
 
         for (char c : input.toCharArray()) {
 
-            if (c == '\'') {
+            if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
-            } else if (c == ' ' && !inSingleQuotes) {
+            } 
+            else if (c == '"' && !inSingleQuotes) {
+                inDoubleQuotes = !inDoubleQuotes;
+            } 
+            else if (c == ' ' && !inSingleQuotes && !inDoubleQuotes) {
                 if (current.length() > 0) {
                     tokens.add(current.toString());
                     current.setLength(0);
                 }
-            } else {
+            } 
+            else {
                 current.append(c);
             }
         }
+
         if (current.length() > 0) {
             tokens.add(current.toString());
         }
+
         return tokens;
     }
 
@@ -107,8 +115,7 @@ public class Main {
                     }
 
                 }
-            } 
-            else {
+            } else {
 
                 List<String> command = parseCommand(input);
                 String path = System.getenv("PATH");
