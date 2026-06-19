@@ -23,7 +23,7 @@ public class Main {
             else if(input.startsWith("type ")){ 
                 String command = input.substring(5); //after type is written after type
 
-                if(command.matches("type|echo|exit")){
+                if(command.matches("type|echo|exit|pwd")){
                     System.out.println(command + " is a shell builtin");
                 }
 
