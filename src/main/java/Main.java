@@ -68,7 +68,7 @@ public class Main {
             }
 
             if(!found) {
-                System.out.printf("%s: not found", command[0]);
+                System.out.printf("%s: command not found", command[0]);
             }
 
             }
