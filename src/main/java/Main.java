@@ -16,6 +16,10 @@ public class Main {
                 System.out.println(input.substring(5));
             }
 
+            else if(input.equals("pwd")){
+                System.out.println(System.getProperty("user.dir"));
+            }
+
             else if(input.startsWith("type ")){ 
                 String command = input.substring(5); //after type is written after type
 
