@@ -62,24 +62,44 @@ public class Main {
         while (true) {
             System.out.print("$ ");
             String input = sc.nextLine();
+
+            List<String> tokens = parseCommand(input);
+
+            String redirectFile = null;
+
+            for (int i = 0; i < tokens.size(); i++) {
+                if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
+                    redirectFile = tokens.get(i + 1);
+
+                    tokens = new ArrayList<>(tokens.subList(0, i));
+                    break;
+                }
+            }
+
             if (input.equals("exit")) {
                 break;
-            } 
-            else if (input.startsWith("echo")) {
-                List<String> tokens = parseCommand(input);
-
+            } else if (!tokens.isEmpty() && tokens.get(0).equals("echo")) {
+                StringBuilder output = new StringBuilder();
                 for (int i = 1; i < tokens.size(); i++) {
                     if (i > 1) {
-                        System.out.print(" ");
+                        output.append(" ");
                     }
-                    System.out.print(tokens.get(i));
+                    output.append(tokens.get(i));
                 }
-                System.out.println();
-            } 
-            else if (input.equals("pwd")) {
+                output.append("\n");
+
+                if (redirectFile != null) {
+                    try (java.io.PrintWriter writer
+                            = new java.io.PrintWriter(new File(redirectFile))) {
+
+                        writer.print(output.toString());
+                    }
+                } else {
+                    System.out.print(output.toString());
+                }
+            } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
-            } 
-            else if (input.startsWith("cd ")) {
+            } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
                 File targetDir;
@@ -107,9 +127,8 @@ public class Main {
                 } else {
                     System.out.println("cd: " + directory + ": No such file or directory");
                 }
-            } 
-            else if (input.startsWith("type ")) {
-                String command = parseCommand(input).get(1);
+            } else if (input.startsWith("type ")) {
+                String command = tokens.get(1);
 
                 if (command.matches("type|echo|exit|pwd|cd")) {
                     System.out.println(command + " is a shell builtin");
@@ -117,7 +136,7 @@ public class Main {
                     String path = System.getenv("PATH");
                     boolean found = false;
 
-                    for (String dir : path.split(":")) {
+                    for (String dir : path.split(File.pathSeparator)) {
 
                         File file = new File(dir, command);
 
@@ -134,26 +153,32 @@ public class Main {
                 }
             } else {
 
-                List<String> command = parseCommand(input);
+                List<String> command = tokens;
                 String path = System.getenv("PATH");
                 boolean found = false;
 
-                for (String dir : path.split(":")) {
+                for (String dir : path.split(File.pathSeparator)) {
 
                     File file = new File(dir, command.get(0));
 
                     if (file.isFile() && file.canExecute()) {
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        pb.inheritIO();
 
+                        pb.directory(new File(System.getProperty("user.dir")));
+
+                        if (redirectFile != null) {
+                            pb.redirectOutput(new File(redirectFile));
+                            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                        } 
+                        else {
+                            pb.inheritIO();
+                        }
                         Process process = pb.start();
                         process.waitFor();
-
                         found = true;
                         break;
                     }
                 }
-
                 if (!found) {
                     System.out.println(command.get(0) + ": command not found");
                 }
