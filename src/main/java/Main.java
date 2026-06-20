@@ -206,11 +206,7 @@ public class Main {
                         pb.directory(new File(System.getProperty("user.dir")));
 
                         if (stdoutRedirect != null) {
-                            pb.redirectOutput(new File(stdoutRedirect));
-                        } else {
-                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                        }
-                        if (stdoutRedirect != null) {
+
                             if (appendStdout) {
                                 pb.redirectOutput(
                                         ProcessBuilder.Redirect.appendTo(
@@ -224,8 +220,19 @@ public class Main {
                                         )
                                 );
                             }
+
                         } else {
                             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+                        }
+
+                        if (stderrRedirect != null) {
+                            pb.redirectError(
+                                    ProcessBuilder.Redirect.to(
+                                            new File(stderrRedirect)
+                                    )
+                            );
+                        } else {
+                            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                         }
                         Process process = pb.start();
                         process.waitFor();
