@@ -242,30 +242,37 @@ public class Main {
                 List<String> leftCommand = pipelineCommands.get(0);
                 List<String> rightCommand = pipelineCommands.get(1);
 
-                // if (isBuiltin(leftCommand.get(0))) {
+                if (pipelineCommands.size() == 2 && isBuiltin(leftCommand.get(0))) {
 
-                //     String output = runBuiltin(leftCommand);
-                //     ProcessBuilder pb = new ProcessBuilder(rightCommand);
-                //     pb.directory(new File(System.getProperty("user.dir")));
-                //     Process p = pb.start();
+                    String output = runBuiltin(leftCommand);
 
-                //     p.getOutputStream().write(output.getBytes());
-                //     p.getOutputStream().close();
+                    ProcessBuilder pb = new ProcessBuilder(rightCommand);
+                    pb.directory(new File(System.getProperty("user.dir")));
 
-                //     p.getInputStream().transferTo(System.out);
-                //     p.waitFor();
-                //     continue;
-                // }
+                    Process p = pb.start();
 
-                // if (isBuiltin(rightCommand.get(0))) {
-                //     ProcessBuilder pb = new ProcessBuilder(leftCommand);
-                //     pb.directory(new File(System.getProperty("user.dir")));
-                //     Process p = pb.start();
-                //     p.waitFor();
-                //     String result = runBuiltin(rightCommand);
-                //     System.out.print(result);
-                //     continue;
-                // }
+                    p.getOutputStream().write(output.getBytes());
+                    p.getOutputStream().close();
+
+                    p.getInputStream().transferTo(System.out);
+
+                    p.waitFor();
+                    continue;
+                }
+
+                if (pipelineCommands.size() == 2 && isBuiltin(rightCommand.get(0))) {
+
+                    ProcessBuilder pb = new ProcessBuilder(leftCommand);
+                    pb.directory(new File(System.getProperty("user.dir")));
+
+                    Process p = pb.start();
+
+                    p.waitFor();
+
+                    System.out.print(runBuiltin(rightCommand));
+
+                    continue;
+                }
 
                 List<ProcessBuilder> builders = new ArrayList<>();
 
