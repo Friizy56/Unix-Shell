@@ -68,10 +68,19 @@ public class Main {
             // String redirectFile = null;
             String stdoutRedirect = null;
             String stderrRedirect = null;
+            boolean appendStdout = false;
 
             for (int i = 0; i < tokens.size(); i++) {
                 if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
                     stdoutRedirect = tokens.get(i + 1);
+                    appendStdout = false;
+                    tokens = new ArrayList<>(tokens.subList(0, i));
+                    break;
+                }
+
+                if (tokens.get(i).equals(">>") || tokens.get(i).equals("1>>")) {
+                    stdoutRedirect = tokens.get(i + 1);
+                    appendStdout = true;
                     tokens = new ArrayList<>(tokens.subList(0, i));
                     break;
                 }
@@ -100,10 +109,10 @@ public class Main {
                 }
 
                 if (stdoutRedirect != null) {
-                    try (java.io.PrintWriter writer
-                            = new java.io.PrintWriter(new File(stdoutRedirect))) {
+                    try (java.io.FileWriter writer
+                            = new java.io.FileWriter(stdoutRedirect, appendStdout)) {
 
-                        writer.print(output.toString());
+                        writer.write(output.toString());
                     }
                 } else {
                     System.out.print(output.toString());
@@ -190,7 +199,6 @@ public class Main {
 
                     if (file.isFile() && file.canExecute()) {
                         ProcessBuilder pb = new ProcessBuilder(command);
-
                         pb.directory(new File(System.getProperty("user.dir")));
 
                         if (stdoutRedirect != null) {
@@ -198,11 +206,22 @@ public class Main {
                         } else {
                             pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                         }
-
-                        if (stderrRedirect != null) {
-                            pb.redirectError(new File(stderrRedirect));
+                        if (stdoutRedirect != null) {
+                            if (appendStdout) {
+                                pb.redirectOutput(
+                                        ProcessBuilder.Redirect.appendTo(
+                                                new File(stdoutRedirect)
+                                        )
+                                );
+                            } else {
+                                pb.redirectOutput(
+                                        ProcessBuilder.Redirect.to(
+                                                new File(stdoutRedirect)
+                                        )
+                                );
+                            }
                         } else {
-                            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                         }
                         Process process = pb.start();
                         process.waitFor();
