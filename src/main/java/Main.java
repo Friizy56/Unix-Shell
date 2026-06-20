@@ -114,7 +114,7 @@ public class Main {
 
         while (true) {
 
-            reapJobs(jobs);
+            // reapJobs(jobs);
 
             System.out.print("$ ");
             String input = sc.nextLine();
