@@ -128,6 +128,8 @@ public class Main {
                 }
             } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
+            } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
+                
             } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
@@ -167,7 +169,7 @@ public class Main {
             } else if (input.startsWith("type ")) {
                 String command = tokens.get(1);
 
-                if (command.matches("type|echo|exit|pwd|cd")) {
+                if (command.matches("type|echo|exit|pwd|cd|jobs")) {
                     System.out.println(command + " is a shell builtin");
                 } else {
                     String path = System.getenv("PATH");
