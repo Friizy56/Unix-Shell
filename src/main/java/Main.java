@@ -250,6 +250,30 @@ public class Main {
                     System.out.print(result);
                     continue;
                 }
+
+                ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
+                ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
+
+                pb1.directory(new File(System.getProperty("user.dir")));
+                pb2.directory(new File(System.getProperty("user.dir")));
+
+                pb1.redirectError(ProcessBuilder.Redirect.INHERIT);
+                pb2.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+                List<Process> processes
+                        = ProcessBuilder.startPipeline(
+                                List.of(pb1, pb2)
+                        );
+
+                Process lastProcess
+                        = processes.get(processes.size() - 1);
+
+                lastProcess.getInputStream().transferTo(System.out);
+                for (Process p : processes) {
+                    p.waitFor();
+                }
+
+                continue;
             }
 
             if (input.equals("exit")) {
