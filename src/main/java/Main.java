@@ -345,33 +345,18 @@ public class Main {
                     pb1.redirectError(ProcessBuilder.Redirect.INHERIT);
                     pb2.redirectError(ProcessBuilder.Redirect.INHERIT);
 
-                    Process p1 = pb1.start();
-                    Process p2 = pb2.start();
+                    List<Process> processes
+                            = ProcessBuilder.startPipeline(
+                                    List.of(pb1, pb2)
+                            );
 
-                    Thread pipeThread = new Thread(() -> {
-                        try (
-                                var in = p1.getInputStream(); var out = p2.getOutputStream()) {
-                            in.transferTo(out);
-                            out.close();
-                        } catch (Exception e) {
-                        }
-                    });
+                    Process lastProcess = processes.get(processes.size() - 1);
 
-                    Thread outputThread = new Thread(() -> {
-                        try {
-                            p2.getInputStream().transferTo(System.out);
-                        } catch (Exception e) {
-                        }
-                    });
+                    lastProcess.getInputStream().transferTo(System.out);
 
-                    pipeThread.start();
-                    outputThread.start();
-
-                    p1.waitFor();
-                    p2.waitFor();
-
-                    pipeThread.join();
-                    outputThread.join();
+                    for (Process p : processes) {
+                        p.waitFor();
+                    }
 
                     continue;
                 }
