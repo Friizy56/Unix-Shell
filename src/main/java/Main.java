@@ -65,6 +65,13 @@ public class Main {
 
             List<String> tokens = parseCommand(input);
 
+            boolean background = false;
+
+            if (!tokens.isEmpty() && tokens.get(tokens.size() - 1).equals("&")) {
+                background = true;
+                tokens.remove(tokens.size() - 1);
+            }
+
             String stdoutRedirect = null;
             String stderrRedirect = null;
 
@@ -129,7 +136,7 @@ public class Main {
             } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
-                
+
             } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
@@ -252,7 +259,13 @@ public class Main {
                             pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                         }
                         Process process = pb.start();
-                        process.waitFor();
+
+                        if (background) {
+                            System.out.println("[1] " + process.pid());
+                        } else {
+                            process.waitFor();
+                        }
+
                         found = true;
                         break;
                     }
