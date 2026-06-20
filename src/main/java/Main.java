@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+        
 
     static List<String> parseCommand(String input) {
         List<String> tokens = new ArrayList<>();
@@ -12,10 +13,18 @@ public class Main {
 
         boolean inSingleQuotes = false;
         boolean inDoubleQuotes = false;
+        boolean escaped = false;
 
         for (char c : input.toCharArray()) {
 
-            if (c == '\'' && !inDoubleQuotes) {
+            if (escaped) {
+                current.append(c);
+                escaped = false;
+            } 
+            else if (c == '\\' && !inSingleQuotes && !inDoubleQuotes) {
+                escaped = true;
+            } 
+            else if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
             } 
             else if (c == '"' && !inSingleQuotes) {
