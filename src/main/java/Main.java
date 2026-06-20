@@ -65,10 +65,11 @@ public class Main {
 
             List<String> tokens = parseCommand(input);
 
-            // String redirectFile = null;
             String stdoutRedirect = null;
             String stderrRedirect = null;
+
             boolean appendStdout = false;
+            boolean appendStderr = false;
 
             for (int i = 0; i < tokens.size(); i++) {
                 if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
@@ -87,6 +88,14 @@ public class Main {
 
                 if (tokens.get(i).equals("2>")) {
                     stderrRedirect = tokens.get(i + 1);
+                    appendStderr = false;
+                    tokens = new ArrayList<>(tokens.subList(0, i));
+                    break;
+                }
+
+                if (tokens.get(i).equals("2>>")) {
+                    stderrRedirect = tokens.get(i + 1);
+                    appendStderr = true;
                     tokens = new ArrayList<>(tokens.subList(0, i));
                     break;
                 }
@@ -105,7 +114,7 @@ public class Main {
                 output.append("\n");
 
                 if (stderrRedirect != null) {
-                    new java.io.PrintWriter(new File(stderrRedirect)).close();
+                    new java.io.FileWriter(stderrRedirect, appendStderr).close();
                 }
 
                 if (stdoutRedirect != null) {
@@ -199,7 +208,7 @@ public class Main {
 
                     if (file.isFile() && file.canExecute()) {
                         ProcessBuilder pb = new ProcessBuilder(command);
-                        
+
                         pb.directory(new File(System.getProperty("user.dir")));
 
                         if (stdoutRedirect != null) {
@@ -223,11 +232,20 @@ public class Main {
                         }
 
                         if (stderrRedirect != null) {
-                            pb.redirectError(
-                                    ProcessBuilder.Redirect.to(
-                                            new File(stderrRedirect)
-                                    )
-                            );
+
+                            if (appendStderr) {
+                                pb.redirectError(
+                                        ProcessBuilder.Redirect.appendTo(
+                                                new File(stderrRedirect)
+                                        )
+                                );
+                            } else {
+                                pb.redirectError(
+                                        ProcessBuilder.Redirect.to(
+                                                new File(stderrRedirect)
+                                        )
+                                );
+                            }
                         } else {
                             pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                         }
@@ -239,10 +257,10 @@ public class Main {
                 }
                 if (!found) {
                     if (stderrRedirect != null) {
-                        try (java.io.PrintWriter writer
-                                = new java.io.PrintWriter(new File(stderrRedirect))) {
+                        try (java.io.FileWriter writer
+                                = new java.io.FileWriter(stderrRedirect, appendStderr)) {
 
-                            writer.println(command.get(0) + ": command not found");
+                            writer.write(command + ": not found\n");
                         }
                     } else {
                         System.err.println(command.get(0) + ": command not found");
