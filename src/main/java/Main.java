@@ -28,7 +28,6 @@ public class Main {
                         continue;
                     }
                 }
-
                 current.append('\\');
 
             } else if (c == '\\' && !inSingleQuotes && !inDoubleQuotes) {
@@ -67,6 +66,45 @@ public class Main {
         }
     }
 
+    static void reapJobs(List<Job> jobs) {
+
+        List<Job> completedJobs = new ArrayList<>();
+
+        for (int i = 0; i < jobs.size(); i++) {
+
+            Job job = jobs.get(i);
+
+            if (!job.process.isAlive()) {
+
+                char marker = ' ';
+
+                if (i == jobs.size() - 1) {
+                    marker = '+';
+                } else if (i == jobs.size() - 2) {
+                    marker = '-';
+                }
+
+                String cmd = job.command;
+
+                if (cmd.endsWith(" &")) {
+                    cmd = cmd.substring(0, cmd.length() - 2);
+                }
+
+                System.out.printf(
+                        "[%d]%c  %-24s%s%n",
+                        job.jobNumber,
+                        marker,
+                        "Done",
+                        cmd
+                );
+
+                completedJobs.add(job);
+            }
+        }
+
+        jobs.removeAll(completedJobs);
+    }
+
     public static void main(String[] args) throws Exception {
         // TODO: Uncomment the code below to pass the first stage
 
@@ -75,6 +113,9 @@ public class Main {
         int nextJobNumber = 1;
 
         while (true) {
+
+            reapJobs(jobs);
+
             System.out.print("$ ");
             String input = sc.nextLine();
 
@@ -152,14 +193,12 @@ public class Main {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
 
-                List<Job> completedJobs = new ArrayList<>();
+                reapJobs(jobs);
 
                 for (int i = 0; i < jobs.size(); i++) {
 
                     Job job = jobs.get(i);
-
-                    boolean running = job.process.isAlive();
-
+                    
                     char marker = ' ';
 
                     if (i == jobs.size() - 1) {
@@ -168,37 +207,14 @@ public class Main {
                         marker = '-';
                     }
 
-                    if (running) {
-
-                        System.out.printf(
-                                "[%d]%c  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Running",
-                                job.command
-                        );
-
-                    } else {
-
-                        String cmd = job.command;
-
-                        if (cmd.endsWith(" &")) {
-                            cmd = cmd.substring(0, cmd.length() - 2);
-                        }
-
-                        System.out.printf(
-                                "[%d]%c  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Done",
-                                cmd
-                        );
-
-                        completedJobs.add(job);
-                    }
+                    System.out.printf(
+                            "[%d]%c  %-24s%s%n",
+                            job.jobNumber,
+                            marker,
+                            "Running",
+                            job.command
+                    );
                 }
-
-                jobs.removeAll(completedJobs);
 
             } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
