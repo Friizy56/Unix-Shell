@@ -114,7 +114,7 @@ public class Main {
 
         while (true) {
 
-            // reapJobs(jobs);
+            reapJobs(jobs);
 
             System.out.print("$ ");
             String input = sc.nextLine();
@@ -192,8 +192,6 @@ public class Main {
             } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
-
-                reapJobs(jobs);
 
                 for (int i = 0; i < jobs.size(); i++) {
 
