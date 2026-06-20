@@ -125,7 +125,6 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
         List<Job> jobs = new ArrayList<>();
-        int nextJobNumber = 1;
 
         while (true) {
 
@@ -177,6 +176,20 @@ public class Main {
                     tokens = new ArrayList<>(tokens.subList(0, i));
                     break;
                 }
+            }
+
+            int pipeIndex = tokens.indexOf("|");
+
+            List<String> leftCommand = null;
+            List<String> rightCommand = null;
+
+            if (pipeIndex != -1) {
+
+                leftCommand
+                        = new ArrayList<>(tokens.subList(0, pipeIndex));
+
+                rightCommand
+                        = new ArrayList<>(tokens.subList(pipeIndex + 1, tokens.size()));
             }
 
             if (input.equals("exit")) {
@@ -321,6 +334,48 @@ public class Main {
                 }
             } else {
 
+                if (pipeIndex != -1) {
+
+                    ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
+                    ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
+
+                    pb1.directory(new File(System.getProperty("user.dir")));
+                    pb2.directory(new File(System.getProperty("user.dir")));
+
+                    pb1.redirectError(ProcessBuilder.Redirect.INHERIT);
+                    pb2.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+                    Process p1 = pb1.start();
+                    Process p2 = pb2.start();
+
+                    Thread pipeThread = new Thread(() -> {
+                        try (
+                                var in = p1.getInputStream(); var out = p2.getOutputStream()) {
+                            in.transferTo(out);
+                            out.close();
+                        } catch (Exception e) {
+                        }
+                    });
+
+                    Thread outputThread = new Thread(() -> {
+                        try {
+                            p2.getInputStream().transferTo(System.out);
+                        } catch (Exception e) {
+                        }
+                    });
+
+                    pipeThread.start();
+                    outputThread.start();
+
+                    p1.waitFor();
+                    p2.waitFor();
+
+                    pipeThread.join();
+                    outputThread.join();
+
+                    continue;
+                }
+
                 List<String> command = tokens;
                 String path = System.getenv("PATH");
                 boolean found = false;
@@ -355,7 +410,6 @@ public class Main {
                         }
 
                         if (stderrRedirect != null) {
-
                             if (appendStderr) {
                                 pb.redirectError(
                                         ProcessBuilder.Redirect.appendTo(
