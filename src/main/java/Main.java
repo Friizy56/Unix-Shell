@@ -95,6 +95,10 @@ public class Main {
                 }
                 output.append("\n");
 
+                if (stderrRedirect != null) {
+                    new java.io.PrintWriter(new File(stderrRedirect)).close();
+                }
+
                 if (stdoutRedirect != null) {
                     try (java.io.PrintWriter writer
                             = new java.io.PrintWriter(new File(stdoutRedirect))) {
