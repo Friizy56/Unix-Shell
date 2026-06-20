@@ -156,6 +156,24 @@ public class Main {
         return cmd.matches("echo|type|pwd|cd|exit|jobs");
     }
 
+    static List<List<String>> parsePipeline(List<String> tokens) {
+
+        List<List<String>> commands = new ArrayList<>();
+        List<String> current = new ArrayList<>();
+        for (String token : tokens) {
+            if (token.equals("|")) {
+                commands.add(current);
+                current = new ArrayList<>();
+            } else {
+                current.add(token);
+            }
+        }
+
+        commands.add(current);
+
+        return commands;
+    }
+
     public static void main(String[] args) throws Exception {
         // TODO: Uncomment the code below to pass the first stage
 
@@ -214,61 +232,66 @@ public class Main {
                 }
             }
 
-            int pipeIndex = tokens.indexOf("|");
+            boolean hasPipe = tokens.contains("|");
 
-            List<String> leftCommand = null;
-            List<String> rightCommand = null;
+            if (hasPipe) {
 
-            if (pipeIndex != -1) {
+                List<List<String>> pipelineCommands
+                        = parsePipeline(tokens);
 
-                leftCommand
-                        = new ArrayList<>(tokens.subList(0, pipeIndex));
+                List<String> leftCommand = pipelineCommands.get(0);
+                List<String> rightCommand = pipelineCommands.get(1);
 
-                rightCommand
-                        = new ArrayList<>(tokens.subList(pipeIndex + 1, tokens.size()));
-                if (isBuiltin(leftCommand.get(0))) {
+                // if (isBuiltin(leftCommand.get(0))) {
 
-                    String output = runBuiltin(leftCommand);
-                    ProcessBuilder pb = new ProcessBuilder(rightCommand);
-                    pb.directory(new File(System.getProperty("user.dir")));
-                    Process p = pb.start();
+                //     String output = runBuiltin(leftCommand);
+                //     ProcessBuilder pb = new ProcessBuilder(rightCommand);
+                //     pb.directory(new File(System.getProperty("user.dir")));
+                //     Process p = pb.start();
 
-                    p.getOutputStream().write(output.getBytes());
-                    p.getOutputStream().close();
+                //     p.getOutputStream().write(output.getBytes());
+                //     p.getOutputStream().close();
 
-                    p.getInputStream().transferTo(System.out);
-                    p.waitFor();
-                    continue;
+                //     p.getInputStream().transferTo(System.out);
+                //     p.waitFor();
+                //     continue;
+                // }
+
+                // if (isBuiltin(rightCommand.get(0))) {
+                //     ProcessBuilder pb = new ProcessBuilder(leftCommand);
+                //     pb.directory(new File(System.getProperty("user.dir")));
+                //     Process p = pb.start();
+                //     p.waitFor();
+                //     String result = runBuiltin(rightCommand);
+                //     System.out.print(result);
+                //     continue;
+                // }
+
+                List<ProcessBuilder> builders = new ArrayList<>();
+
+                for (List<String> cmd : pipelineCommands) {
+
+                    ProcessBuilder pb = new ProcessBuilder(cmd);
+
+                    pb.directory(
+                            new File(System.getProperty("user.dir"))
+                    );
+
+                    pb.redirectError(
+                            ProcessBuilder.Redirect.INHERIT
+                    );
+
+                    builders.add(pb);
                 }
-
-                if (isBuiltin(rightCommand.get(0))) {
-                    ProcessBuilder pb = new ProcessBuilder(leftCommand);
-                    pb.directory(new File(System.getProperty("user.dir")));
-                    Process p = pb.start();
-                    p.waitFor();
-                    String result = runBuiltin(rightCommand);
-                    System.out.print(result);
-                    continue;
-                }
-
-                ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
-                ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
-
-                pb1.directory(new File(System.getProperty("user.dir")));
-                pb2.directory(new File(System.getProperty("user.dir")));
-
-                pb1.redirectError(ProcessBuilder.Redirect.INHERIT);
-                pb2.redirectError(ProcessBuilder.Redirect.INHERIT);
 
                 List<Process> processes
-                        = ProcessBuilder.startPipeline(
-                                List.of(pb1, pb2)
-                        );
+                        = ProcessBuilder.startPipeline(builders);
 
                 Process lastProcess
                         = processes.get(processes.size() - 1);
 
                 lastProcess.getInputStream().transferTo(System.out);
+
                 for (Process p : processes) {
                     p.waitFor();
                 }
