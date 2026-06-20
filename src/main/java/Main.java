@@ -46,18 +46,33 @@ public class Main {
                 current.append(c);
             }
         }
-
         if (current.length() > 0) {
             tokens.add(current.toString());
         }
-
         return tokens;
+    }
+
+    static class Job {
+
+        int jobNumber;
+        long pid;
+        String command;
+        String status;
+
+        Job(int jobNumber, long pid, String command, String status) {
+            this.jobNumber = jobNumber;
+            this.pid = pid;
+            this.command = command;
+            this.status = status;
+        }
     }
 
     public static void main(String[] args) throws Exception {
         // TODO: Uncomment the code below to pass the first stage
 
         Scanner sc = new Scanner(System.in);
+        List<Job> jobs = new ArrayList<>();
+        int nextJobNumber = 1;
 
         while (true) {
             System.out.print("$ ");
@@ -136,6 +151,17 @@ public class Main {
             } else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
+
+                for (Job job : jobs) {
+
+                    System.out.printf(
+                            "[%d]+  %-24s%s%n",
+                            job.jobNumber,
+                            job.status,
+                            job.command
+                    );
+
+                }
 
             } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
@@ -261,7 +287,20 @@ public class Main {
                         Process process = pb.start();
 
                         if (background) {
-                            System.out.println("[1] " + process.pid());
+
+                            jobs.add(
+                                    new Job(
+                                            nextJobNumber,
+                                            process.pid(),
+                                            input,
+                                            "Running"
+                                    )
+                            );
+
+                            System.out.println("[" + nextJobNumber + "] " + process.pid());
+
+                            nextJobNumber++;
+
                         } else {
                             process.waitFor();
                         }
