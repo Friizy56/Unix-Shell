@@ -193,10 +193,11 @@ public class Main {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
 
+                List<Job> completedJobs = new ArrayList<>();
+
                 for (int i = 0; i < jobs.size(); i++) {
 
                     Job job = jobs.get(i);
-                    
                     char marker = ' ';
 
                     if (i == jobs.size() - 1) {
@@ -205,16 +206,38 @@ public class Main {
                         marker = '-';
                     }
 
-                    System.out.printf(
-                            "[%d]%c  %-24s%s%n",
-                            job.jobNumber,
-                            marker,
-                            "Running",
-                            job.command
-                    );
+                    if (job.process.isAlive()) {
+
+                        System.out.printf(
+                                "[%d]%c  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Running",
+                                job.command
+                        );
+
+                    } else {
+
+                        String cmd = job.command;
+
+                        if (cmd.endsWith(" &")) {
+                            cmd = cmd.substring(0, cmd.length() - 2);
+                        }
+
+                        System.out.printf(
+                                "[%d]%c  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Done",
+                                cmd
+                        );
+                        completedJobs.add(job);
+                    }
                 }
 
-            } else if (input.startsWith("cd ")) {
+                jobs.removeAll(completedJobs);
+            } 
+            else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
                 File targetDir;
