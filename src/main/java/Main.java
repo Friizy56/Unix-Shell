@@ -195,14 +195,14 @@ public class Main {
 
                         if (stdoutRedirect != null) {
                             pb.redirectOutput(new File(stdoutRedirect));
+                        } else {
+                            pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
                         }
 
                         if (stderrRedirect != null) {
                             pb.redirectError(new File(stderrRedirect));
-                        }
-
-                        if (stdoutRedirect == null && stderrRedirect == null) {
-                            pb.inheritIO();
+                        } else {
+                            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                         }
                         Process process = pb.start();
                         process.waitFor();
