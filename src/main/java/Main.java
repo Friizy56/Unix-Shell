@@ -152,15 +152,22 @@ public class Main {
                 System.out.println(System.getProperty("user.dir"));
             } else if (!tokens.isEmpty() && tokens.get(0).equals("jobs")) {
 
-                for (Job job : jobs) {
+                for (int i = 0; i < jobs.size(); i++) {
 
+                    Job job = jobs.get(i);
+                    char marker = ' ';
+                    if (i == jobs.size() - 1) {
+                        marker = '+';
+                    } else if (i == jobs.size() - 2) {
+                        marker = '-';
+                    }
                     System.out.printf(
-                            "[%d]+  %-24s%s%n",
+                            "[%d]%c  %-24s%s%n",
                             job.jobNumber,
+                            marker,
                             job.status,
                             job.command
                     );
-
                 }
 
             } else if (input.startsWith("cd ")) {
