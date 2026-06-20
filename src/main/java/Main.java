@@ -105,6 +105,21 @@ public class Main {
         jobs.removeAll(completedJobs);
     }
 
+    static int getNextJobNumber(List<Job> jobs) {
+
+        if (jobs.isEmpty()) {
+            return 1;
+        }
+
+        int maxJobNumber = 0;
+
+        for (Job job : jobs) {
+            maxJobNumber = Math.max(maxJobNumber, job.jobNumber);
+        }
+
+        return maxJobNumber + 1;
+    }
+
     public static void main(String[] args) throws Exception {
         // TODO: Uncomment the code below to pass the first stage
 
@@ -236,8 +251,7 @@ public class Main {
                 }
 
                 jobs.removeAll(completedJobs);
-            } 
-            else if (input.startsWith("cd ")) {
+            } else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
                 File targetDir;
@@ -362,18 +376,18 @@ public class Main {
 
                         if (background) {
 
+                            int jobNumber = getNextJobNumber(jobs);
+
                             jobs.add(
                                     new Job(
-                                            nextJobNumber,
+                                            jobNumber,
                                             process.pid(),
                                             input,
                                             process
                                     )
                             );
 
-                            System.out.println("[" + nextJobNumber + "] " + process.pid());
-
-                            nextJobNumber++;
+                            System.out.println("[" + jobNumber + "] " + process.pid());
 
                         } else {
                             process.waitFor();
