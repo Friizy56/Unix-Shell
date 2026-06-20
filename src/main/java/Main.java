@@ -198,7 +198,11 @@ public class Main {
                     File file = new File(dir, command.get(0));
 
                     if (file.isFile() && file.canExecute()) {
-                        ProcessBuilder pb = new ProcessBuilder(command);
+                        List<String> fullCommand = new ArrayList<>();
+                        fullCommand.add(file.getAbsolutePath());
+                        fullCommand.addAll(command.subList(1, command.size()));
+
+                        ProcessBuilder pb = new ProcessBuilder(fullCommand);
                         pb.directory(new File(System.getProperty("user.dir")));
 
                         if (stdoutRedirect != null) {
