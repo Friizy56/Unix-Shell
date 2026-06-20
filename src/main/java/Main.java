@@ -120,6 +120,42 @@ public class Main {
         return maxJobNumber + 1;
     }
 
+    static String runBuiltin(List<String> command) {
+
+        if (command.get(0).equals("echo")) {
+
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 1; i < command.size(); i++) {
+                if (i > 1) {
+                    sb.append(" ");
+                }
+                sb.append(command.get(i));
+            }
+
+            sb.append("\n");
+
+            return sb.toString();
+        }
+
+        if (command.get(0).equals("type")) {
+
+            String arg = command.get(1);
+
+            if (arg.matches("type|echo|exit|pwd|cd|jobs")) {
+                return arg + " is a shell builtin\n";
+            }
+
+            return arg + ": not found\n";
+        }
+
+        return "";
+    }
+
+    static boolean isBuiltin(String cmd) {
+        return cmd.matches("echo|type|pwd|cd|exit|jobs");
+    }
+
     public static void main(String[] args) throws Exception {
         // TODO: Uncomment the code below to pass the first stage
 
@@ -336,26 +372,40 @@ public class Main {
 
                 if (pipeIndex != -1) {
 
-                    ProcessBuilder pb1 = new ProcessBuilder(leftCommand);
-                    ProcessBuilder pb2 = new ProcessBuilder(rightCommand);
+                    if (isBuiltin(leftCommand.get(0))) {
 
-                    pb1.directory(new File(System.getProperty("user.dir")));
-                    pb2.directory(new File(System.getProperty("user.dir")));
+                        String output = runBuiltin(leftCommand);
 
-                    pb1.redirectError(ProcessBuilder.Redirect.INHERIT);
-                    pb2.redirectError(ProcessBuilder.Redirect.INHERIT);
+                        ProcessBuilder pb
+                                = new ProcessBuilder(rightCommand);
 
-                    List<Process> processes
-                            = ProcessBuilder.startPipeline(
-                                    List.of(pb1, pb2)
-                            );
+                        Process p = pb.start();
 
-                    Process lastProcess = processes.get(processes.size() - 1);
+                        p.getOutputStream().write(output.getBytes());
+                        p.getOutputStream().close();
 
-                    lastProcess.getInputStream().transferTo(System.out);
+                        p.getInputStream().transferTo(System.out);
 
-                    for (Process p : processes) {
                         p.waitFor();
+
+                        continue;
+                    }
+
+                    if (isBuiltin(rightCommand.get(0))) {
+
+                        ProcessBuilder pb
+                                = new ProcessBuilder(leftCommand);
+
+                        Process p = pb.start();
+
+                        p.waitFor();
+
+                        String result
+                                = runBuiltin(rightCommand);
+
+                        System.out.print(result);
+
+                        continue;
                     }
 
                     continue;
