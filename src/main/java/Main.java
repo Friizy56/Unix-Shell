@@ -226,6 +226,30 @@ public class Main {
 
                 rightCommand
                         = new ArrayList<>(tokens.subList(pipeIndex + 1, tokens.size()));
+                if (isBuiltin(leftCommand.get(0))) {
+
+                    String output = runBuiltin(leftCommand);
+                    ProcessBuilder pb = new ProcessBuilder(rightCommand);
+                    pb.directory(new File(System.getProperty("user.dir")));
+                    Process p = pb.start();
+
+                    p.getOutputStream().write(output.getBytes());
+                    p.getOutputStream().close();
+
+                    p.getInputStream().transferTo(System.out);
+                    p.waitFor();
+                    continue;
+                }
+
+                if (isBuiltin(rightCommand.get(0))) {
+                    ProcessBuilder pb = new ProcessBuilder(leftCommand);
+                    pb.directory(new File(System.getProperty("user.dir")));
+                    Process p = pb.start();
+                    p.waitFor();
+                    String result = runBuiltin(rightCommand);
+                    System.out.print(result);
+                    continue;
+                }
             }
 
             if (input.equals("exit")) {
@@ -307,7 +331,6 @@ public class Main {
                 if (directory.equals("~")) {
 
                     String home = System.getenv("HOME"); // for Linux
-
                     if (home == null) { // for Windows
                         home = System.getProperty("user.home");
                     }
@@ -369,47 +392,6 @@ public class Main {
 
                 }
             } else {
-
-                if (pipeIndex != -1) {
-
-                    if (isBuiltin(leftCommand.get(0))) {
-
-                        String output = runBuiltin(leftCommand);
-
-                        ProcessBuilder pb
-                                = new ProcessBuilder(rightCommand);
-
-                        Process p = pb.start();
-
-                        p.getOutputStream().write(output.getBytes());
-                        p.getOutputStream().close();
-
-                        p.getInputStream().transferTo(System.out);
-
-                        p.waitFor();
-
-                        continue;
-                    }
-
-                    if (isBuiltin(rightCommand.get(0))) {
-
-                        ProcessBuilder pb
-                                = new ProcessBuilder(leftCommand);
-
-                        Process p = pb.start();
-
-                        p.waitFor();
-
-                        String result
-                                = runBuiltin(rightCommand);
-
-                        System.out.print(result);
-
-                        continue;
-                    }
-
-                    continue;
-                }
 
                 List<String> command = tokens;
                 String path = System.getenv("PATH");
