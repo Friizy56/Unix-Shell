@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-        
 
     static List<String> parseCommand(String input) {
         List<String> tokens = new ArrayList<>();
@@ -15,28 +14,35 @@ public class Main {
         boolean inDoubleQuotes = false;
         boolean escaped = false;
 
-        for (char c : input.toCharArray()) {
-
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
             if (escaped) {
                 current.append(c);
                 escaped = false;
-            } 
-            else if (c == '\\' && !inSingleQuotes && !inDoubleQuotes) {
+            } else if (c == '\\' && inDoubleQuotes) {
+                if (i + 1 < input.length()) {
+                    char next = input.charAt(i + 1);
+                    if (next == '"' || next == '\\') {
+                        current.append(next);
+                        i++;
+                        continue;
+                    }
+                }
+
+                current.append('\\');
+
+            } else if (c == '\\' && !inSingleQuotes && !inDoubleQuotes) {
                 escaped = true;
-            } 
-            else if (c == '\'' && !inDoubleQuotes) {
+            } else if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
-            } 
-            else if (c == '"' && !inSingleQuotes) {
+            } else if (c == '"' && !inSingleQuotes) {
                 inDoubleQuotes = !inDoubleQuotes;
-            } 
-            else if (c == ' ' && !inSingleQuotes && !inDoubleQuotes) {
+            } else if (c == ' ' && !inSingleQuotes && !inDoubleQuotes) {
                 if (current.length() > 0) {
                     tokens.add(current.toString());
                     current.setLength(0);
                 }
-            } 
-            else {
+            } else {
                 current.append(c);
             }
         }
@@ -58,7 +64,8 @@ public class Main {
             String input = sc.nextLine();
             if (input.equals("exit")) {
                 break;
-            } else if (input.startsWith("echo")) {
+            } 
+            else if (input.startsWith("echo")) {
                 List<String> tokens = parseCommand(input);
 
                 for (int i = 1; i < tokens.size(); i++) {
@@ -67,16 +74,16 @@ public class Main {
                     }
                     System.out.print(tokens.get(i));
                 }
-
                 System.out.println();
-            } else if (input.equals("pwd")) {
+            } 
+            else if (input.equals("pwd")) {
                 System.out.println(System.getProperty("user.dir"));
-            } else if (input.startsWith("cd ")) {
+            } 
+            else if (input.startsWith("cd ")) {
                 String directory = input.substring(3);
 
                 File targetDir;
                 if (directory.equals("~")) {
-                    // targetDir = new File(System.getenv("HOME"));
 
                     String home = System.getenv("HOME"); // for Linux
 
@@ -100,7 +107,8 @@ public class Main {
                 } else {
                     System.out.println("cd: " + directory + ": No such file or directory");
                 }
-            } else if (input.startsWith("type ")) {
+            } 
+            else if (input.startsWith("type ")) {
                 String command = parseCommand(input).get(1);
 
                 if (command.matches("type|echo|exit|pwd|cd")) {
