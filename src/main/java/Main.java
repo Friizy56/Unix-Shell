@@ -65,12 +65,19 @@ public class Main {
 
             List<String> tokens = parseCommand(input);
 
-            String redirectFile = null;
+            // String redirectFile = null;
+            String stdoutRedirect = null;
+            String stderrRedirect = null;
 
             for (int i = 0; i < tokens.size(); i++) {
                 if (tokens.get(i).equals(">") || tokens.get(i).equals("1>")) {
-                    redirectFile = tokens.get(i + 1);
+                    stdoutRedirect = tokens.get(i + 1);
+                    tokens = new ArrayList<>(tokens.subList(0, i));
+                    break;
+                }
 
+                if (tokens.get(i).equals("2>")) {
+                    stderrRedirect = tokens.get(i + 1);
                     tokens = new ArrayList<>(tokens.subList(0, i));
                     break;
                 }
@@ -88,9 +95,9 @@ public class Main {
                 }
                 output.append("\n");
 
-                if (redirectFile != null) {
+                if (stdoutRedirect != null) {
                     try (java.io.PrintWriter writer
-                            = new java.io.PrintWriter(new File(redirectFile))) {
+                            = new java.io.PrintWriter(new File(stdoutRedirect))) {
 
                         writer.print(output.toString());
                     }
@@ -125,7 +132,15 @@ public class Main {
                 if (targetDir.exists() && targetDir.isDirectory()) {
                     System.setProperty("user.dir", targetDir.getCanonicalPath());
                 } else {
-                    System.out.println("cd: " + directory + ": No such file or directory");
+                    if (stderrRedirect != null) {
+                        try (java.io.PrintWriter writer
+                                = new java.io.PrintWriter(new File(stderrRedirect))) {
+
+                            writer.println("cd: " + directory + ": No such file or directory");
+                        }
+                    } else {
+                        System.err.println("cd: " + directory + ": No such file or directory");
+                    }
                 }
             } else if (input.startsWith("type ")) {
                 String command = tokens.get(1);
@@ -147,7 +162,15 @@ public class Main {
                         }
                     }
                     if (!found) {
-                        System.out.println(command + ": not found");
+                        if (stderrRedirect != null) {
+                            try (java.io.PrintWriter writer
+                                    = new java.io.PrintWriter(new File(stderrRedirect))) {
+
+                                writer.println(command + ": not found");
+                            }
+                        } else {
+                            System.err.println(command + ": not found");
+                        }
                     }
 
                 }
@@ -166,11 +189,15 @@ public class Main {
 
                         pb.directory(new File(System.getProperty("user.dir")));
 
-                        if (redirectFile != null) {
-                            pb.redirectOutput(new File(redirectFile));
-                            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-                        } 
-                        else {
+                        if (stdoutRedirect != null) {
+                            pb.redirectOutput(new File(stdoutRedirect));
+                        }
+
+                        if (stderrRedirect != null) {
+                            pb.redirectError(new File(stderrRedirect));
+                        }
+
+                        if (stdoutRedirect == null && stderrRedirect == null) {
                             pb.inheritIO();
                         }
                         Process process = pb.start();
@@ -180,7 +207,15 @@ public class Main {
                     }
                 }
                 if (!found) {
-                    System.out.println(command.get(0) + ": command not found");
+                    if (stderrRedirect != null) {
+                        try (java.io.PrintWriter writer
+                                = new java.io.PrintWriter(new File(stderrRedirect))) {
+
+                            writer.println(command.get(0) + ": command not found");
+                        }
+                    } else {
+                        System.err.println(command.get(0) + ": command not found");
+                    }
                 }
             }
         }
